@@ -6,9 +6,9 @@ var data = fs
   .filter(Number.isFinite);
 
 console.log(JSON.stringify(data))
-const pairFinder = require('./pairFinder')
+const tripleFinder = require('./tripleFinder')
 
-const [a, b] = pairFinder(data, 2020)
-console.log(`${a} * ${b} = ${a * b}`)
+const [a, b, c] = tripleFinder(data, 2020)
+console.log(`${a} * ${b} * ${c} = ${a * b * c}`)
 
 

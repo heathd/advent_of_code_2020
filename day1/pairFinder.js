@@ -7,7 +7,7 @@ function findPairsThatAddUpTo(listOfNumbers, target) {
 
   while (i<j) {
     var sum = sortedList[i] + sortedList[j];
-    console.log(`sortedList[${i}]=${sortedList[i]} sortedList[${j}]=${sortedList[j]}  sum: ${sum}`)
+    // console.log(`sortedList[${i}]=${sortedList[i]} sortedList[${j}]=${sortedList[j]}  sum: ${sum}`)
     if (i===j || sum < target) {
       i++;
       j = listEnd;
