@@ -21,7 +21,7 @@ a
 b
 `.trim()
 
-const { split, uniqueQuestions, process } = require('./uniqueQuestions');
+const { split, uniqueQuestions, process, questionsAllYes, process2 } = require('./uniqueQuestions');
 
 test("split", () => {
   expect(split(data).length).toBe(5)
@@ -38,6 +38,16 @@ test("unique questions", () => {
   expect(uniqueQuestions("ab\nac")).toBe(3)
 })
 
+
+test('questions where everyone answered yes', () => {
+  const expected = [3, 0, 1, 1, 1]
+  expect(split(data).map(questionsAllYes)).toStrictEqual(expected)
+})
+
 test('process', () => {
   expect(process(data)).toBe(11)
+})
+
+test('process2', () => {
+  expect(process2(data)).toBe(6)
 })
