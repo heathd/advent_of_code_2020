@@ -12,6 +12,7 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
+      "outputCapture": "std",
       "type": "pwa-node"
     },
     {
@@ -21,6 +22,7 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
+      "outputCapture": "std",
       "program": "${workspaceFolder}/index.js"
     }
   ]
