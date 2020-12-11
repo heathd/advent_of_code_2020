@@ -9,116 +9,8 @@ faded blue bags contain no other bags.
 dotted black bags contain no other bags.
 `.trim()
 
-/*
-    [white, shiny gold]
-    [muted yellow, shiny gold]
-    [dark orange, [bright white, muted yellow], shiny gold]
-    [light red, [bright white, muted yellow], shiny gold]
-*/
+const Matrix = require("./matrix.js")
 
-function parseLine(line) {
-  var [outer, innerRaw] = line.split(" bags contain ")
-  innerRaw = innerRaw.replace(/ bags?\.?/g, "")
-  const inner = innerRaw
-    .split(", ")
-    .map(s => s.replace(/^[0-9]+ /, ""))
-    .filter(s => s !== "no other")
-  return [outer, inner]
-}
-
-function parse(rules) {
-  var data = {}
-  rules.split("\n").forEach((line) => {
-    const [outer, inner] = parseLine(line)
-    data[outer] = inner
-  })
-  return data
-}
-
-test("parse", () => {
-  expect(parse("bright white bags contain 1 shiny gold bag.")).toStrictEqual({"bright white": ["shiny gold"]})
-
-  const twoLines = `bright white bags contain 1 shiny gold bag.
-muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.`
-  expect(parse(twoLines)).toStrictEqual({
-     "bright white": ["shiny gold"],
-     "muted yellow": ["shiny gold", "faded blue"]
-  })
-})
-
-function flatten(rules) {
-  const out = new Matrix()
-  for (const key in rules) {
-    if (rules.hasOwnProperty(key)) {
-      rules[key].forEach(v => out.set(key, v))
-    }
-  }
-  return out
-}
-
-test("flatten", () => {
-  const input = { "a": ["x", "y"] }
-  const expectedOutput = [["a", "x"], ["a", "y"]]
-  expect(flatten(input).listPairs()).toStrictEqual(expectedOutput)
-})
-
-class Matrix {
-  m = {}
-
-  set(from, to) {
-    if (!this.m.hasOwnProperty(from)) {
-      this.m[from] = {}
-    }
-    this.m[from][to] = 1
-  }
-
-  has(from, to) {
-    return this.m.hasOwnProperty(from) && this.m[from].hasOwnProperty(to)
-  }
-
-  allFrom(from) {
-    if (this.m.hasOwnProperty(from)) {
-      return Object.keys(this.m[from])
-    } else {
-      return []
-    }
-  }
-
-  allTo(desiredTo) {
-    return this.listPairs().filter(([from,to]) => to === desiredTo).map(([from, to]) => from)
-  }
-
-  listPairs() {
-    var pairs = []
-    for (const from of Object.keys(this.m)) {
-      const toHash = this.m[from]
-      for (const to of Object.keys(toHash)) {
-        pairs.push([from, to])
-      }
-    }
-    return pairs
-  }
-
-  transitiveClosure() {
-    do {
-      var numAdded = 0
-      this.listPairs().forEach((pair) => {
-        var [from, mid] = pair
-        this.allFrom(mid).forEach((to) => {
-          if (!this.has(from, to)) {
-            this.set(from,to)
-            numAdded++
-          }
-        })
-      })
-    } while (numAdded > 0)
-  }
-
-}
-
-function parseToMatrix(rules) {
-  return flatten(parse(rules))
-}
 
 describe("Matrix", () => {
   test("set/has", () => {
@@ -152,17 +44,6 @@ describe("Matrix", () => {
       ])
   })
 
-  test("parse to matrix", () => {
-    const rules = `light red bags contain 1 bright white bag, 2 muted yellow bags.
-dark orange bags contain 3 bright white bags, 4 muted yellow bags.`
-
-    var m = parseToMatrix(rules)
-    expect(m.has("light red", "bright white")).toBe(true)
-    expect(m.has("light red", "muted yellow")).toBe(true)
-    expect(m.has("dark orange", "bright white")).toBe(true)
-    expect(m.has("dark orange", "muted yellow")).toBe(true)
-  })
-
   test("allTo", () => {
     var m = new Matrix()
     m.set("a", "b")
@@ -172,10 +53,31 @@ dark orange bags contain 3 bright white bags, 4 muted yellow bags.`
     expect(m.allTo("b")).toStrictEqual(["a", "x"])
   })
 
+  test("parse", () => {
+    expect(Matrix.parse("bright white bags contain 1 shiny gold bag.")).toStrictEqual({ "bright white": ["shiny gold"] })
+
+    const twoLines = `bright white bags contain 1 shiny gold bag.
+muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.`
+    expect(Matrix.parse(twoLines)).toStrictEqual({
+      "bright white": ["shiny gold"],
+      "muted yellow": ["shiny gold", "faded blue"]
+    })
+  })
+
+  test("parse to matrix", () => {
+    const rules = `light red bags contain 1 bright white bag, 2 muted yellow bags.
+dark orange bags contain 3 bright white bags, 4 muted yellow bags.`
+
+    var m = Matrix.parseToMatrix(rules)
+    expect(m.has("light red", "bright white")).toBe(true)
+    expect(m.has("light red", "muted yellow")).toBe(true)
+    expect(m.has("dark orange", "bright white")).toBe(true)
+    expect(m.has("dark orange", "muted yellow")).toBe(true)
+  })
 })
 
 test("compute outermost bags ending in shiny gold", () => {
-  var m = parseToMatrix(rules)
+  var m = Matrix.parseToMatrix(rules)
   m.transitiveClosure()
   var outermostBags = m.allTo("shiny gold")
   expect(outermostBags).toIncludeAllMembers([
