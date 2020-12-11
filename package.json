@@ -7,6 +7,11 @@
     "test": "jest",
     "watch": "jest --watch"
   },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "jest-extended"
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/heathd/advent_of_code_2020.git"
@@ -18,6 +23,7 @@
   },
   "homepage": "https://github.com/heathd/advent_of_code_2020#readme",
   "devDependencies": {
-    "jest": "^26.6.3"
+    "jest": "^26.6.3",
+    "jest-extended": "^0.11.5"
   }
 }
