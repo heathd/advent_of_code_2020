@@ -5,25 +5,16 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run day3",
-      "cwd": "${workspaceFolder}/day3/",
-      "program": "${workspaceFolder}/day3/day3.js",
-      "request": "launch",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "outputCapture": "std",
-      "type": "pwa-node"
-    },
-    {
+      "name": "Debug Jest Tests",
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
-      "skipFiles": [
-        "<node_internals>/**"
+      "runtimeArgs": [
+        "--inspect-brk",
+        "${workspaceRoot}/node_modules/.bin/jest",
+        "--runInBand"
       ],
-      "outputCapture": "std",
-      "program": "${workspaceFolder}/index.js"
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }
