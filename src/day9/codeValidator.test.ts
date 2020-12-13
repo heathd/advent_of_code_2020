@@ -1,4 +1,4 @@
-import { findFirstInvalid } from "./findFirstInvalid"
+import { findContiguousSequenceThatSumsTo, findFirstInvalid, sumMinMax } from "./findFirstInvalid"
 
 describe("findFirstInvalid", () => {
   test("it finds 127 for the example", () => {
@@ -42,5 +42,25 @@ describe("findFirstInvalid", () => {
     let codeStream = [1, 2, 3, 4, 5, 6, 11, 12, 11]
 
     expect(findFirstInvalid(codeStream, 3)).toBe(6)
+  })
+})
+
+describe("contiguous sequence finder", () => {
+  test("it finds the contiguous sequence that sums to the value", () => {
+    let sequence = [1,2,3,4,5,6]
+    expect(findContiguousSequenceThatSumsTo(sequence, 21)).toStrictEqual(sequence)
+    expect(findContiguousSequenceThatSumsTo(sequence, 20)).toStrictEqual([2, 3, 4, 5, 6])
+    expect(findContiguousSequenceThatSumsTo(sequence, 18)).toStrictEqual([3, 4, 5, 6])
+    expect(findContiguousSequenceThatSumsTo(sequence, 18)).toStrictEqual([3, 4, 5, 6])
+    expect(findContiguousSequenceThatSumsTo(sequence, 9)).toStrictEqual([2, 3, 4])
+  })
+
+})
+
+
+describe("sumMinMax", () => {
+  test("sums the min and max in a sequence", () => {
+    expect(sumMinMax([1, 2, 3])).toBe(1 + 3)
+    expect(sumMinMax([2, 3, 9])).toBe(2 + 9)
   })
 })
