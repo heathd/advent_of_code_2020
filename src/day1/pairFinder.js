@@ -1,5 +1,5 @@
 function findPairsThatAddUpTo(listOfNumbers, target) {
-  var sortedList = [...listOfNumbers].sort()
+  var sortedList = [...listOfNumbers].sort((a, b) => a-b)
   const listEnd = sortedList.length - 1;
 
   var i = 0
