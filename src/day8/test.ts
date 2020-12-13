@@ -1,4 +1,4 @@
-import {ProgramInstruction, parse, runProgram} from "./parseOne"
+import {ProgramInstruction, parse, runProgramRaw, terminatesCleanly} from "./parseOne"
 
 describe("loop finder", () => {
   test('basic', () => {
@@ -13,7 +13,7 @@ jmp -4
 acc +6
 `.trim()
 
-    expect(runProgram(program)).toBe(5);
+    expect(runProgramRaw(program)).toMatchObject({ accumulator: 5, terminationState: "loop" })
   })
 })
 
@@ -38,24 +38,31 @@ describe("parser", () => {
 
 describe("program simulator", () => {
   test("it runs a program of nops and returns undefined", () => {
-    expect(runProgram("nop +0")).toBe(undefined)
+    expect(runProgramRaw("nop +0")).toMatchObject({ terminationState: "clean" })
   })
 
   test("it runs a program of jmp and returns 0", () => {
-    expect(runProgram("jmp +0")).toBe(0)
+    expect(runProgramRaw("jmp +0")).toMatchObject({ accumulator: 0, terminationState: "loop" })
   })
 
   test("it runs a program of nop and jmp and returns the value in the accumulator", () => {
-    expect(runProgram("nop +0\njmp -1")).toBe(0)
-    expect(runProgram("nop +0\nnop +0\njmp -1")).toBe(0)
+    expect(runProgramRaw("nop +0\njmp -1")).toMatchObject({ accumulator: 0, terminationState: "loop" })
+    expect(runProgramRaw("nop +0\nnop +0\njmp -1")).toMatchObject({ accumulator: 0, terminationState: "loop" })
   })
 
   test("it runs a program with accumulator and loop", () => {
-    expect(runProgram("acc +1\njmp -1")).toBe(1)
+    expect(runProgramRaw("acc +1\njmp -1")).toMatchObject({ accumulator: 1, terminationState: "loop" })
   })
 
   test("it runs a program with accumulator, nop and loop", () => {
-    expect(runProgram("acc +1\nnop +0\njmp -1")).toBe(1)
-    expect(runProgram("jmp +2\nacc +3\nacc +1\njmp -1")).toBe(1)
+    expect(runProgramRaw("acc +1\nnop +0\njmp -1")).toMatchObject(
+      {accumulator: 1, terminationState: "loop"})
+    expect(runProgramRaw("jmp +2\nacc +3\nacc +1\njmp -1")).toMatchObject(
+      { accumulator: 1, terminationState: "loop" }
+    )
+  })
+
+  test("it reports if program terminates cleanly", () => {
+    expect(runProgramRaw("nop +0")).toMatchObject({ terminationState: "clean" })
   })
 })
