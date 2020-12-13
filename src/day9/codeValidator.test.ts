@@ -1,36 +1,4 @@
-import findPairsThatAddUpTo from "../day1/pairFinder"
-
-function findFirstInvalid(codeStreamRaw: string | number[], windowSize: number): number | undefined {
-  let codeStream: number[]
-  if (typeof(codeStreamRaw) === "string") {
-    codeStream = codeStreamRaw.split("\n").map((l) => parseInt(l))
-  } else {
-    codeStream = codeStreamRaw
-  }
-
-  function doesntHavePairInWindowThatSumsTo(desiredSum: number, position: number): boolean {
-    if (position < windowSize) {
-      return false
-    }
-
-    let window = codeStream.slice(position - 5, position)
-
-    let found = findPairsThatAddUpTo(window, codeStream[position])
-    return found.length === 0
-  }
-
-  return codeStream.find(doesntHavePairInWindowThatSumsTo)
-}
-
-describe("findPairsThatAddUpTo", () => {
-  test("it finds a pair within a list of numbers", () => {
-    expect(findPairsThatAddUpTo([1, 2, 3, 4, 5], 6)).toStrictEqual([1, 5])
-  })
-
-  test("it returns [] if none found", () => {
-    expect(findPairsThatAddUpTo([1, 2, 3, 4, 5], 100)).toStrictEqual([])
-  })
-})
+import { findFirstInvalid } from "./findFirstInvalid"
 
 describe("findFirstInvalid", () => {
   test("it finds 127 for the example", () => {
@@ -68,5 +36,11 @@ describe("findFirstInvalid", () => {
     let codeStream = [1, 2, 3, 4, 5, 6, 11, 12, 11]
 
     expect(findFirstInvalid(codeStream, 5)).toBe(12)
+  })
+
+  test("window size can be varied", () => {
+    let codeStream = [1, 2, 3, 4, 5, 6, 11, 12, 11]
+
+    expect(findFirstInvalid(codeStream, 3)).toBe(6)
   })
 })
