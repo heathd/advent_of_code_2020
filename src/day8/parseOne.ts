@@ -30,6 +30,51 @@ export function runProgramRaw(programSource: string): ExecutionState {
   return runProgram(parse(programSource))
 }
 
+export type ProgramCallback = (program: Array<ProgramInstruction>) => void
+export type ProgramPredicate = (program: Array<ProgramInstruction>) => boolean
+
+export function eachMutationOf(program: Array<ProgramInstruction>,
+  callback: ProgramCallback): void {
+  findMutationWhich(program, (mutated: ProgramInstruction[]) => {
+    callback(mutated)
+    return false
+  })
+}
+
+function mutation(op: string): string | undefined {
+  let lookup = new Map([
+    ["nop", "jmp"],
+    ["jmp", "nop"]
+  ])
+  return lookup.get(op)
+}
+
+function terminatesCleanly(program: ProgramInstruction[]): boolean {
+  let e = runProgram(program)
+  return e.terminationState === "clean"
+}
+
+export function findMutationWhichTerminatesCleanly(program: Array<ProgramInstruction>):
+Array<ProgramInstruction> | undefined {
+  return findMutationWhich(program, terminatesCleanly)
+}
+
+export function findMutationWhich(program: Array<ProgramInstruction>,
+  callback: ProgramPredicate): Array<ProgramInstruction> | undefined {
+
+  for(let index = 0; index <program.length; index++) {
+    const instruction = program[index];
+    let m = mutation(instruction.op)
+    if (m !== undefined) {
+      const mutated = [...program]
+      mutated.splice(index, 1, { op: m, arg: instruction.arg })
+      if (callback(mutated)) {
+        return mutated
+      }
+    }
+  }
+}
+
 export function runProgram(program: Array<ProgramInstruction>): ExecutionState {
   let e: ExecutionState = {
     accumulator: 0,
@@ -65,8 +110,4 @@ export function runProgram(program: Array<ProgramInstruction>): ExecutionState {
 
   e.terminationState = "clean"
   return e
-}
-
-export function terminatesCleanly(program: string) {
-  return runProgramRaw(program) === undefined
 }

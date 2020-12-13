@@ -1,4 +1,4 @@
-import {ProgramInstruction, parse, runProgramRaw, terminatesCleanly} from "./parseOne"
+import {ProgramInstruction, parse, runProgramRaw, eachMutationOf, findMutationWhich, runProgram, findMutationWhichTerminatesCleanly} from "./parseOne"
 
 describe("loop finder", () => {
   test('basic', () => {
@@ -64,5 +64,84 @@ describe("program simulator", () => {
 
   test("it reports if program terminates cleanly", () => {
     expect(runProgramRaw("nop +0")).toMatchObject({ terminationState: "clean" })
+  })
+})
+
+describe("each mutation of", () => {
+  test("it invokes the callback with each possible mutation of a single nop", () => {
+    let program = parse("nop +0")
+    const f = jest.fn();
+    eachMutationOf(program, f)
+    expect(f).toHaveBeenCalledWith([{op: "jmp", arg: 0}])
+  })
+
+  test("it invokes the callback with each possible mutation of a single jmp program", () => {
+    let program = parse("jmp +0")
+    const f = jest.fn();
+    eachMutationOf(program, f)
+    expect(f).toHaveBeenCalledWith([{ op: "nop", arg: 0 }])
+  })
+
+  test("it invokes the callback with each possible mutation of a multi instruction program", () => {
+    let program = parse("jmp +0\nnop +1")
+    const f = jest.fn();
+    eachMutationOf(program, f)
+    expect(f).toHaveBeenNthCalledWith(1, [
+      { op: "nop", arg: 0 },
+      { op: "nop", arg: 1 },
+    ])
+    expect(f).toHaveBeenNthCalledWith(2, [
+      { op: "jmp", arg: 0 },
+      { op: "jmp", arg: 1 },
+    ])
+  })
+
+  test("it skips acc instructions", () => {
+    let program = parse("jmp +0\nacc +3\nnop +1")
+    const f = jest.fn((any) => false);
+    eachMutationOf(program, f)
+    expect(f).toHaveBeenNthCalledWith(1, [
+      { op: "nop", arg: 0 },
+      { op: "acc", arg: 3 },
+      { op: "nop", arg: 1 },
+    ])
+    expect(f).toHaveBeenNthCalledWith(2, [
+      { op: "jmp", arg: 0 },
+      { op: "acc", arg: 3 },
+      { op: "jmp", arg: 1 },
+    ])
+  })
+
+})
+
+describe("searching for program mutation which terminates cleanly", () => {
+  test("it can find the mutation", () => {
+    let program = parse("jmp +0\nacc +3\nnop +1")
+
+    expect(findMutationWhichTerminatesCleanly(program)).toStrictEqual(
+      parse("nop +0\nacc +3\nnop +1")
+    )
+  })
+
+  test("it returns undefined if there is no mutation which satisfies", () => {
+    let program = parse("jmp +0\nacc +3\nnop +1")
+
+    expect(findMutationWhichTerminatesCleanly(program)).toBeUndefined()
+  })
+
+  test("it returns the mutation of nop=>jmp", () => {
+    let program = parse("nop +0\nacc +3\nnop +1")
+
+    expect(findMutationWhichTerminatesCleanly(program)).toStrictEqual(
+      parse("nop +0\nacc +3\njmp +1")
+    )
+  })
+
+  test("more complex example", () => {
+    let program = parse("nop +0\nacc +3\njmp +3\njmp -2\njmp -3\njmp -4")
+
+    expect(findMutationWhichTerminatesCleanly(program)).toStrictEqual(
+      parse("nop +0\nacc +3\njmp +3\njmp -2\njmp -3\nnop -4")
+    )
   })
 })
